@@ -1,4 +1,6 @@
+import { PlayerDTO } from "./playerDTO"
+
 export interface CriarSalaDTO {
-  nomeJogador: string
+  player: PlayerDTO
   password?: string
 }

@@ -6,6 +6,7 @@ export function sortearSalasAleatorias(salas: RoomDTO): RoomDataDTO[] {
     .sort(() => Math.random() - 0.5)
     .slice(0, 10)
     .map(chave => salas[chave])
+    .filter(sala => !sala.jogoIniciado)
 
   return salasAleatorias;
 }

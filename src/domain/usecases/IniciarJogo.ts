@@ -1,25 +1,29 @@
-import { DefaultEventsMap, Socket } from "socket.io"
+import { DefaultEventsMap, Server, Socket } from "socket.io"
 import { RoomDataDTO } from "@src/domain/dto/roomDTO"
 import { Funcao } from "../dto/playerDTO"
 import { LugaresDTO } from "../dto/lugares/LugaresDTO"
 import { sortearLocal } from "@src/helpers/sortearLugar"
+import { SocketClient, SocketServer } from "@src/server"
 
 export default class IniciarJogo {
   constructor (
-    private socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
+    private socket: SocketClient,
+    private io: SocketServer,
     private sala: RoomDataDTO
   ) { }
 
-  call (): RoomDataDTO {
+  call () {
     const erro = this.validacoes()
 
+    this.sala.jogoIniciado = true
     if (erro) {
       this.socket.emit("erro", "Não foi possível iniciar o jogo")
-      return this.sala
     }
 
+    this.sala.salaResetada = false
     this.sortearImpostorAndFirstPlayer()
-    return this.sala
+    const { password, ...salaSemSenha } = this.sala
+    this.io.to(this.sala.codigo).emit("jogoIniciado", salaSemSenha)
   }
 
   private validacoes (): boolean {
@@ -43,6 +47,6 @@ export default class IniciarJogo {
     })
     this.sala.players[index].funcao = Funcao.ESPIAO
     this.sala.players[index].lugar = undefined
-    this.sala.players[beginPlayerIndex].begin = true
+    this.sala.players[beginPlayerIndex].inicia = true
   }
 }

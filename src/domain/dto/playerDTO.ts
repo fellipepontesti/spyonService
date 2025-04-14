@@ -1,12 +1,13 @@
 import { LugaresDTO } from "@src/domain/dto/lugares/LugaresDTO"
 
 export interface PlayerDTO {
-  name: string
+  nome: string
   socketId: string
-  wins: number
-  funcao: Funcao
+  vitorias: number
+  funcao?: Funcao
   lugar?: LugaresDTO
-  begin?: boolean
+  inicia?: boolean
+  aceitarDiscussao?: boolean
 }
 
 export enum Funcao {
