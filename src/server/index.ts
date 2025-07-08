@@ -255,26 +255,6 @@ io.on("connection", (socket) => {
       } 
     }, socket)
   })
-
-  socket.on("voltarPraSala", (input: VoltarPraSalaDTO) => {
-    comSalaValida(input.codigo, (sala) => {
-      if (!sala.salaResetada) {
-        resetarSala(sala)
-        sala.players.push(input.player)
-        sala.ownerTemp = input.player.socketId
-      } else {
-        sala.players.push(input.player)
-      }
-
-      if (sala.socketIdOwner === socket.id) {
-        sala.ownerTemp = undefined
-      }
-
-      const { password, ...salaSemSenha } = sala
-      socket.emit("salaEncontrada", salaSemSenha)
-      io.to(input.codigo).emit("atualizarSala", salaSemSenha)
-    }, socket)
-  })
 })
 
 server.listen(3000, () => {
