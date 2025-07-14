@@ -275,7 +275,9 @@ io.on("connection", (socket) => {
   })
 
   socket.on('health-check', () => {
-    return { message: 'It\'s ok!'}
+    socket.emit('health-check-result', {
+      message: 'It\'s ok!'
+    })
   })
 })
 
