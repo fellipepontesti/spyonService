@@ -6,7 +6,7 @@ import { Funcao, PlayerDTO } from "@src/domain/dto/playerDTO"
 import IniciarJogo from "@src/domain/usecases/IniciarJogo"
 import { CriarSalaDTO } from "@src/domain/dto/criarSalaDTO"
 import { EntrarSalaDTO } from "@src/domain/dto/entrarSalaDTO"
-import { sortearSalasAleatorias } from "@src/helpers/sortearSalas"
+import { listagemDeSalas } from "@src/helpers/sortearSalas"
 import { ConfirmarVotoDTO, DiscussaoDTO } from '@src/domain/dto/votacaoDTO';
 import { DefaultEventsMap, Server as IOServer, Socket as IOSocket } from "socket.io"
 
@@ -20,6 +20,33 @@ const io = new Server(server, {
 })
 
 export const salas: RoomDTO = {}
+
+function criarSalasFake() {
+  for (let i = 0; i < 45; i++) {
+    const codigo = gerarCodigo() // aqui já garante unicidade considerando salas atualizadas
+    const isPrivada = Math.random() < 0.3
+    const nome = `Jogador${i + 1}`
+
+    salas[codigo] = {
+      jogoIniciado: false,
+      privada: isPrivada,
+      password: isPrivada ? '1234' : '',
+      codigo,
+      tentativas: 0,
+      socketIdOwner: `fake-socket-${i}`,
+      quantidadeDeVotacoes: 3,
+      players: [{
+        socketId: `fake-socket-${i}`,
+        nome,
+        vitorias: Math.floor(Math.random() * 10)
+      }],
+      votosContabilizados: []
+    }
+  }
+}
+
+
+criarSalasFake()
 
 function comSalaValida(codigo: string, callback: (sala: typeof salas[string]) => void, socket: any) {
   const sala = salas[codigo]
@@ -42,7 +69,7 @@ io.on("connection", (socket) => {
       codigo,
       tentativas: 0,
       socketIdOwner: socket.id,
-      quantidadeDeVotacoes: 1,
+      quantidadeDeVotacoes: 3,
       players: [{
         socketId: socket.id,
         nome: data.player.nome,
@@ -57,8 +84,8 @@ io.on("connection", (socket) => {
     io.emit("novaSalaCriada", salaSemSenha)
   })
 
-  socket.on("listarSalas", () => {
-    const result = sortearSalasAleatorias(salas)
+  socket.on("listarSalas", (data) => {
+    const result = listagemDeSalas(salas, data?.page || 1)
     socket.emit("listaDeSalas", result)
   })
 
@@ -93,6 +120,10 @@ io.on("connection", (socket) => {
       if (sala.privada && data.password !== sala.password) {
         socket.emit("erro", "Senha incorreta")
         return
+      }
+
+      if (data.owner) {
+        sala.socketIdOwner = socket.id
       }
 
       socket.join(data.codigo)
@@ -182,15 +213,6 @@ io.on("connection", (socket) => {
         sala.votosContabilizados = []
       }
     }, socket)
-  })    
-
-  socket.on("simularFimDeJogo", (data) => {
-    if (data.vencedor === 'espião') {
-      socket.emit("fimDeJogo", { vencedor: "espião" })
-      return
-    }
-
-    socket.emit("fimDeJogo", { vencedor: "equipe" })
   })
 
   socket.on("mensagem", ({ codigo, mensagem }: { codigo: string, mensagem: string }) => {
@@ -256,24 +278,21 @@ io.on("connection", (socket) => {
     }, socket)
   })
 
-  socket.on("voltarPraSala", (input: VoltarPraSalaDTO) => {
-    comSalaValida(input.codigo, (sala) => {
-      if (!sala.salaResetada) {
-        resetarSala(sala)
-        sala.players.push(input.player)
-        sala.ownerTemp = input.player.socketId
-      } else {
-        sala.players.push(input.player)
-      }
+  socket.on('voltarParaSala', (input: VoltarPraSalaDTO) => {
+    const sala = salas[input.codigo]
 
-      if (sala.socketIdOwner === socket.id) {
-        sala.ownerTemp = undefined
-      }
+    if (!sala) return
 
+    if (sala.socketIdOwner === socket.id) {
+      sala.players = []
+      
+      socket.emit('voltarOwner')
       const { password, ...salaSemSenha } = sala
-      socket.emit("salaEncontrada", salaSemSenha)
       io.to(input.codigo).emit("atualizarSala", salaSemSenha)
-    }, socket)
+      io.to(input.codigo).emit('salaLiberada')
+    } else {
+      socket.emit('aguardandoOwner')
+    }
   })
 })
 
