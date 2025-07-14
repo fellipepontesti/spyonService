@@ -7,7 +7,7 @@
     "paths": {
       "@src/*": ["src/*"]
     },
-    "outDir": "./dist",
+    "outDir": "./dist/server",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
