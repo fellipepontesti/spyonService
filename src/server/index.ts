@@ -273,6 +273,10 @@ io.on("connection", (socket) => {
       socket.emit('aguardandoOwner')
     }
   })
+
+  socket.on('health-check', () => {
+    return { message: 'It\'s ok!'}
+  })
 })
 
 server.listen(3000, () => {
