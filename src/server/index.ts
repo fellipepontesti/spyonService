@@ -1,13 +1,13 @@
 import express from "express"
 import { createServer } from "http"
 import { Server } from "socket.io"
-import { RoomDataDTO, RoomDTO, VoltarPraSalaDTO } from "@src/domain/dto/roomDTO"
-import { Funcao, PlayerDTO } from "@src/domain/dto/playerDTO"
-import IniciarJogo from "@src/domain/usecases/IniciarJogo"
-import { CriarSalaDTO } from "@src/domain/dto/criarSalaDTO"
-import { EntrarSalaDTO } from "@src/domain/dto/entrarSalaDTO"
-import { listagemDeSalas } from "@src/helpers/sortearSalas"
-import { ConfirmarVotoDTO, DiscussaoDTO } from '@src/domain/dto/votacaoDTO';
+import { RoomDataDTO, RoomDTO, VoltarPraSalaDTO } from "../domain/dto/roomDTO"
+import { Funcao, PlayerDTO } from "../domain/dto/playerDTO"
+import IniciarJogo from "../domain/usecases/IniciarJogo"
+import { CriarSalaDTO } from "../domain/dto/criarSalaDTO"
+import { EntrarSalaDTO } from "../domain/dto/entrarSalaDTO"
+import { listagemDeSalas } from "../helpers/sortearSalas"
+import { ConfirmarVotoDTO, DiscussaoDTO } from '../domain/dto/votacaoDTO';
 import { DefaultEventsMap, Server as IOServer, Socket as IOSocket } from "socket.io"
 
 export type SocketServer = IOServer<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>

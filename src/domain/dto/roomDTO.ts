@@ -1,4 +1,4 @@
-import { PlayerDTO } from "@src/domain/dto/playerDTO"
+import { PlayerDTO } from "../../domain/dto/playerDTO"
 
 export interface RoomDTO {
   [key: string]: RoomDataDTO

@@ -1,9 +1,7 @@
-import { DefaultEventsMap, Server, Socket } from "socket.io"
-import { RoomDataDTO } from "@src/domain/dto/roomDTO"
+import { RoomDataDTO } from "../../domain/dto/roomDTO"
 import { Funcao } from "../dto/playerDTO"
-import { LugaresDTO } from "../dto/lugares/LugaresDTO"
-import { sortearLocal } from "@src/helpers/sortearLugar"
-import { SocketClient, SocketServer } from "@src/server"
+import { sortearLocal } from "../../helpers/sortearLugar"
+import { SocketClient, SocketServer } from "../../server"
 
 export default class IniciarJogo {
   constructor (

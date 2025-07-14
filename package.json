@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --ext ts --exec ts-node -r tsconfig-paths/register src/server",
-    "dev": "nodemon --ext ts --exec ts-node -r tsconfig-paths/register src/server"
+    "preinstall": "npx only-allow npm",
+    "dev": "nodemon --ext ts --exec ts-node -r tsconfig-paths/register src/server",
+    "build": "tsc",
+    "start": "node -r tsconfig-paths/register dist/server/index.js"
   },
   "keywords": [],
   "author": "",

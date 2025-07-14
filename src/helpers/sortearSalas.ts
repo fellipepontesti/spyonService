@@ -1,4 +1,4 @@
-import { RoomDataDTO, RoomDTO } from "@src/domain/dto/roomDTO";
+import { RoomDataDTO, RoomDTO } from "../domain/dto/roomDTO";
 
 export interface ListarSalasOutputDTO {
   salas: RoomDataDTO[],
