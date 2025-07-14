@@ -21,6 +21,12 @@ const io = new Server(server, {
 
 export const salas: RoomDTO = {}
 
+app.get('/health-check', (req, res) => {
+  res.sendStatus(204).json({
+    message: "it's ok!"
+  })
+})
+
 function comSalaValida(codigo: string, callback: (sala: typeof salas[string]) => void, socket: any) {
   const sala = salas[codigo]
   if (!sala || !sala.players || sala.players.length === 0) {
