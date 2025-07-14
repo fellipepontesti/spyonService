@@ -22,7 +22,7 @@ const io = new Server(server, {
 export const salas: RoomDTO = {}
 
 app.get('/health-check', (req, res) => {
-  res.sendStatus(204).json({
+  res.sendStatus(200).json({
     message: "it's ok!"
   })
 })
