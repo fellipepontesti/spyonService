@@ -16,6 +16,7 @@ export default class IniciarJogo {
     const erro = this.validacoes()
 
     this.sala.jogoIniciado = true
+
     if (erro) {
       this.socket.emit("erro", "Não foi possível iniciar o jogo")
     }
@@ -31,9 +32,9 @@ export default class IniciarJogo {
       return true
     }
 
-    // if (this.sala.players.length < 3) {
-    //   return true
-    // }
+    if (this.sala.players.length < 3) {
+      return true
+    }
 
     return false
   }
