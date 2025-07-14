@@ -1,10 +1,16 @@
 import { RoomDataDTO, RoomDTO } from "@src/domain/dto/roomDTO";
 
+export interface ListarSalasOutputDTO {
+  salas: RoomDataDTO[],
+  count: number,
+  page: number
+}
+
 export function listagemDeSalas(
   salas: RoomDTO,
   page: number = 1,
   limit: number = 12
-): RoomDataDTO[] {
+): ListarSalasOutputDTO {
   const chaves = Object.keys(salas)
   const salasOrdenadas = chaves
     .map(chave => salas[chave])
@@ -13,5 +19,9 @@ export function listagemDeSalas(
   const inicio = (page - 1) * limit
   const fim = inicio + limit
 
-  return salasOrdenadas.slice(inicio, fim)
+  return {
+    salas: salasOrdenadas.slice(inicio, fim),
+    count: salasOrdenadas.length,
+    page: page
+  }
 }

@@ -21,33 +21,6 @@ const io = new Server(server, {
 
 export const salas: RoomDTO = {}
 
-function criarSalasFake() {
-  for (let i = 0; i < 45; i++) {
-    const codigo = gerarCodigo() // aqui já garante unicidade considerando salas atualizadas
-    const isPrivada = Math.random() < 0.3
-    const nome = `Jogador${i + 1}`
-
-    salas[codigo] = {
-      jogoIniciado: false,
-      privada: isPrivada,
-      password: isPrivada ? '1234' : '',
-      codigo,
-      tentativas: 0,
-      socketIdOwner: `fake-socket-${i}`,
-      quantidadeDeVotacoes: 3,
-      players: [{
-        socketId: `fake-socket-${i}`,
-        nome,
-        vitorias: Math.floor(Math.random() * 10)
-      }],
-      votosContabilizados: []
-    }
-  }
-}
-
-
-criarSalasFake()
-
 function comSalaValida(codigo: string, callback: (sala: typeof salas[string]) => void, socket: any) {
   const sala = salas[codigo]
   if (!sala || !sala.players || sala.players.length === 0) {
