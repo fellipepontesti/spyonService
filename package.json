@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "preinstall": "npx only-allow yarn",
+    "preinstall": "npx only-allow npm",
     "dev": "nodemon --ext ts --exec ts-node -r tsconfig-paths/register src/server",
     "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/server/index.js"
