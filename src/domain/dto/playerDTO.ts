@@ -1,4 +1,4 @@
-import { LugaresDTO } from "../../domain/dto/lugares/LugaresDTO"
+import { LugaresDTO } from "@spyonService/domain/dto/lugares/LugaresDTO"
 
 export interface PlayerDTO {
   nome: string

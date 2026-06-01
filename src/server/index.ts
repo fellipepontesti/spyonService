@@ -1,13 +1,13 @@
 import express from "express"
 import { createServer } from "http"
 import { Server } from "socket.io"
-import { RoomDataDTO, RoomDTO, VoltarPraSalaDTO } from "../domain/dto/roomDTO"
-import { Funcao, PlayerDTO } from "../domain/dto/playerDTO"
-import IniciarJogo from "../domain/usecases/IniciarJogo"
-import { CriarSalaDTO } from "../domain/dto/criarSalaDTO"
-import { EntrarSalaDTO } from "../domain/dto/entrarSalaDTO"
-import { listagemDeSalas } from "../helpers/sortearSalas"
-import { ConfirmarVotoDTO, DiscussaoDTO } from '../domain/dto/votacaoDTO';
+import { RoomDataDTO, RoomDTO, VoltarPraSalaDTO } from "@spyonService/domain/dto/roomDTO"
+import { Funcao, PlayerDTO } from "@spyonService/domain/dto/playerDTO"
+import IniciarJogo from "@spyonService/domain/usecases/IniciarJogo"
+import { CriarSalaDTO } from "@spyonService/domain/dto/criarSalaDTO"
+import { EntrarSalaDTO } from "@spyonService/domain/dto/entrarSalaDTO"
+import { listagemDeSalas } from "@spyonService/helpers/sortearSalas"
+import { ConfirmarVotoDTO, DiscussaoDTO } from '@spyonService/domain/dto/votacaoDTO';
 import { DefaultEventsMap, Server as IOServer, Socket as IOSocket } from "socket.io"
 
 export type SocketServer = IOServer<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -57,7 +57,7 @@ io.on("connection", (socket) => {
       votosContabilizados: []
     }
 
-    const { password, ...salaSemSenha } = salas[codigo]
+    const salaSemSenha = sanitizarSala(salas[codigo])
     io.to(codigo).emit("redirecionarParaSala", salaSemSenha)
     io.to(codigo).emit("atualizarSala", salaSemSenha)
     io.emit("novaSalaCriada", salaSemSenha)
@@ -112,7 +112,7 @@ io.on("connection", (socket) => {
         vitorias: data.player.vitorias
       })
 
-      const { password, ...salaSemSenha } = sala
+      const salaSemSenha = sanitizarSala(sala)
       socket.emit("salaEncontrada", salaSemSenha)
       io.to(data.codigo).emit("atualizarSala", salaSemSenha)
     } else {
@@ -159,7 +159,7 @@ io.on("connection", (socket) => {
           }
   
           io.to(data.codigo).emit("skip")
-          io.to(data.codigo).emit("atualizarSala", sala)
+          io.to(data.codigo).emit("atualizarSala", sanitizarSala(sala))
           return
         }
   
@@ -186,7 +186,7 @@ io.on("connection", (socket) => {
           }
   
           io.to(data.codigo).emit("jogoContinua")
-          io.to(data.codigo).emit("atualizarSala", sala)
+          io.to(data.codigo).emit("atualizarSala", sanitizarSala(sala))
         }
   
         sala.votosContabilizados = []
@@ -211,7 +211,7 @@ io.on("connection", (socket) => {
       io.emit("salaRemovida", codigo)
     } else {
       sala.socketIdOwner = sala.players[0].socketId
-      io.to(codigo).emit("atualizarSala", sala)
+      io.to(codigo).emit("atualizarSala", sanitizarSala(sala))
     }
   })
 
@@ -266,7 +266,7 @@ io.on("connection", (socket) => {
       sala.players = []
       
       socket.emit('voltarOwner')
-      const { password, ...salaSemSenha } = sala
+      const salaSemSenha = sanitizarSala(sala)
       io.to(input.codigo).emit("atualizarSala", salaSemSenha)
       io.to(input.codigo).emit('salaLiberada')
     } else {
@@ -275,9 +275,75 @@ io.on("connection", (socket) => {
   })
 
   socket.on('healthCheck', () => {
+    console.log('---> chegou aqui')
     socket.emit('healthCheckResult', {
       message: 'It\'s ok!'
     })
+  })
+
+  socket.on('testeConexao', (payload) => {
+    console.log('[testeConexao] evento recebido da tela inicial', {
+      socketId: socket.id,
+      payload
+    })
+
+    socket.emit('testeConexaoResult', {
+      message: 'Evento recebido no backend',
+      socketId: socket.id,
+      recebidoEm: new Date().toISOString()
+    })
+  })
+
+  // Sinalização WebRTC para Chat de Voz
+  socket.on("webrtc-offer", (payload: { targetSocketId: string; sdp: any }) => {
+    io.to(payload.targetSocketId).emit("webrtc-offer", {
+      senderSocketId: socket.id,
+      sdp: payload.sdp
+    })
+  })
+
+  socket.on("webrtc-answer", (payload: { targetSocketId: string; sdp: any }) => {
+    io.to(payload.targetSocketId).emit("webrtc-answer", {
+      senderSocketId: socket.id,
+      sdp: payload.sdp
+    })
+  })
+
+  socket.on("webrtc-ice-candidate", (payload: { targetSocketId: string; candidate: any }) => {
+    io.to(payload.targetSocketId).emit("webrtc-ice-candidate", {
+      senderSocketId: socket.id,
+      candidate: payload.candidate
+    })
+  })
+
+  // Transmissão do estado de mudo no chat de voz
+  socket.on("toggle-mute", (payload: { codigo: string; muted: boolean }) => {
+    socket.to(payload.codigo).emit("player-mute-updated", {
+      socketId: socket.id,
+      muted: payload.muted
+    })
+  })
+
+  // Tratamento de desconexão automática do socket
+  socket.on("disconnect", () => {
+    for (const codigo in salas) {
+      const sala = salas[codigo]
+      const jogadorExiste = sala.players.some(p => p.socketId === socket.id)
+      
+      if (jogadorExiste) {
+        sala.players = sala.players.filter(p => p.socketId !== socket.id)
+        
+        if (sala.players.length === 0) {
+          delete salas[codigo]
+          io.emit("salaRemovida", codigo)
+        } else {
+          if (sala.socketIdOwner === socket.id) {
+            sala.socketIdOwner = sala.players[0].socketId
+          }
+          io.to(codigo).emit("atualizarSala", sanitizarSala(sala))
+        }
+      }
+    }
   })
 })
 
@@ -329,4 +395,9 @@ function checarFimDeJogo(sala: RoomDataDTO) {
   }
 
   return false
+}
+
+function sanitizarSala(sala: RoomDataDTO): Omit<RoomDataDTO, 'password'> {
+  const { password, ...salaSemSenha } = sala
+  return salaSemSenha
 }

@@ -3,9 +3,9 @@
     "target": "ES6",
     "module": "CommonJS",
     "rootDir": "./src",
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@src/*": ["src/*"]
+      "@spyonService/*": ["./*"]
     },
     "outDir": "./dist",
     "esModuleInterop": true,

@@ -1,7 +1,7 @@
-import { RoomDataDTO } from "../../domain/dto/roomDTO"
-import { Funcao } from "../dto/playerDTO"
-import { sortearLocal } from "../../helpers/sortearLugar"
-import { SocketClient, SocketServer } from "../../server"
+import { RoomDataDTO } from "@spyonService/domain/dto/roomDTO"
+import { Funcao } from "@spyonService/domain/dto/playerDTO"
+import { sortearLocal } from "@spyonService/helpers/sortearLugar"
+import { SocketClient, SocketServer } from "@spyonService/server"
 
 export default class IniciarJogo {
   constructor (
