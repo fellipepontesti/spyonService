@@ -2,6 +2,7 @@ import { RoomDataDTO } from "@spyonService/domain/dto/roomDTO"
 import { Funcao } from "@spyonService/domain/dto/playerDTO"
 import { sortearLocal } from "@spyonService/helpers/sortearLugar"
 import { SocketClient, SocketServer } from "@spyonService/server"
+import { incrementarPartidas } from "../../helpers/database"
 
 export default class IniciarJogo {
   constructor (
@@ -21,6 +22,24 @@ export default class IniciarJogo {
 
     this.sala.salaResetada = false
     this.sortearImpostorAndFirstPlayer()
+
+    const primeiroJogador = this.sala.players.find(p => p.inicia)
+    if (primeiroJogador) {
+      this.sala.jogadoresPerguntaram = []
+      this.sala.jogadoresResponderam = []
+      this.sala.turno = {
+        perguntaPlayerId: primeiroJogador.id || primeiroJogador.socketId,
+        respostaPlayerId: null,
+        tempoRestante: 60,
+        fase: 'selecionar-respondente'
+      }
+    }
+
+    const userIds = this.sala.players.map(p => p.id).filter(Boolean) as string[]
+    if (userIds.length > 0) {
+      incrementarPartidas(userIds).catch(err => console.error("Erro ao registrar partidas jogadas:", err))
+    }
+
     const { password, ...salaSemSenha } = this.sala
     this.io.to(this.sala.codigo).emit("jogoIniciado", salaSemSenha)
   }

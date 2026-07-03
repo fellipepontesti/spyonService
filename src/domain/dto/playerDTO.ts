@@ -1,6 +1,7 @@
 import { LugaresDTO } from "@spyonService/domain/dto/lugares/LugaresDTO"
 
 export interface PlayerDTO {
+  id?: string
   nome: string
   socketId: string
   vitorias: number
